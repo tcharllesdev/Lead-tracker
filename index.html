@@ -1,309 +1,279 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rastreador de Leads Diários</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-
-    .progress-ring__circle {
-      transition: stroke-dashoffset 0.35s, stroke 0.35s;
-      transform: rotate(-90deg);
-      transform-origin: 50% 50%;
-    }
-
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-
-    /* Estilo para o loader */
-    #loader {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #3b82f6;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreador de Leads Diários</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s, stroke 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+          -webkit-appearance: none; 
+          margin: 0; 
+        }
+        input[type=number] {
+          -moz-appearance: textfield;
+        }
+        /* Estilo para o loader */
+        #loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-  <div id="app-container" class="w-full max-w-4xl bg-white rounded-2xl shadow-lg p-6 md:p-8 hidden">
-
-    <!-- Cabeçalho Principal -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-      <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Rastreador de Leads</h1>
-      <p id="user-id-display" class="text-xs text-gray-400 mt-2 md:mt-0"></p>
-    </div>
-
-    <!-- Controles de Navegação do Mês e Meta Mensal -->
-    <div class="flex justify-between items-center mb-6 bg-gray-50 p-3 rounded-lg">
-      <button id="prev-month" class="p-2 rounded-full hover:bg-gray-200 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-      <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
-        <h2 id="current-month-year" class="text-xl font-semibold text-gray-700 text-center w-48"></h2>
-        <div class="flex items-center gap-2">
-          <label for="monthly-goal" class="text-sm font-medium text-gray-600">Meta Diária:</label>
-          <input type="number" id="monthly-goal" value="10" min="1" class="w-20 p-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+    <div id="app-container" class="w-full max-w-4xl bg-white rounded-2xl shadow-lg p-6 md:p-8 hidden">
+        
+        <!-- Cabeçalho Principal -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Rastreador de Leads</h1>
+            <p id="user-id-display" class="text-xs text-gray-400 mt-2 md:mt-0"></p>
         </div>
-      </div>
-      <button id="next-month" class="p-2 rounded-full hover:bg-gray-200 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
-    </div>
 
-    <!-- Grid do Calendário -->
-    <div id="calendar-grid" class="grid grid-cols-7 gap-2 md:gap-4">
-      <!-- Nomes dos dias da semana -->
-      <div class="text-center font-medium text-xs text-gray-500 py-2">DOM</div>
-      <div class="text-center font-medium text-xs text-gray-500 py-2">SEG</div>
-      <div class="text-center font-medium text-xs text-gray-500 py-2">TER</div>
-      <div class="text-center font-medium text-xs text-gray-500 py-2">QUA</div>
-      <div class="text-center font-medium text-xs text-gray-500 py-2">QUI</div>
-      <div class="text-center font-medium text-xs text-gray-500 py-2">SEX</div>
-      <div class="text-center font-medium text-xs text-gray-500 py-2">SÁB</div>
-    </div>
-
-    <!-- Botão de Ação e Dashboard -->
-    <div class="mt-8 border-t border-gray-200 pt-8">
-      <div class="flex justify-end mb-8">
-        <button id="clear-data" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Limpar Dados do Mês</button>
-      </div>
-      <div id="dashboard" class="bg-gray-50 rounded-xl p-6">
-        <h3 id="dashboard-month-name" class="text-lg font-semibold text-gray-800 mb-4">Resumo de </h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div>
-            <p class="text-sm text-gray-500">Dias Úteis</p>
-            <p id="db-business-days" class="text-2xl font-bold text-gray-900">-</p>
-          </div>
-          <div>
-            <p class="text-sm text-gray-500">Média Diária</p>
-            <p id="db-daily-average" class="text-2xl font-bold text-gray-900">-</p>
-          </div>
-          <div>
-            <p class="text-sm text-gray-500">Total de Abordagens</p>
-            <p id="db-total-leads" class="text-2xl font-bold text-gray-900">-</p>
-          </div>
-          <div>
-            <p class="text-sm text-gray-500">Abordagens Esperadas</p>
-            <p id="db-expected-leads" class="text-2xl font-bold text-gray-900">-</p>
-          </div>
+        <!-- Controles de Navegação do Mês e Meta Mensal -->
+        <div class="flex justify-between items-center mb-6 bg-gray-50 p-3 rounded-lg">
+            <button id="prev-month" class="p-2 rounded-full hover:bg-gray-200 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
+                <h2 id="current-month-year" class="text-xl font-semibold text-gray-700 text-center w-48"></h2>
+                <div class="flex items-center gap-2">
+                    <label for="monthly-goal" class="text-sm font-medium text-gray-600">Meta Diária:</label>
+                    <input type="number" id="monthly-goal" value="10" min="1" class="w-20 p-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                </div>
+            </div>
+            <button id="next-month" class="p-2 rounded-full hover:bg-gray-200 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+            </button>
         </div>
-      </div>
+
+        <!-- Grid do Calendário -->
+        <div id="calendar-grid" class="grid grid-cols-7 gap-2 md:gap-4">
+            <!-- Nomes dos dias da semana -->
+            <div class="text-center font-medium text-xs text-gray-500 py-2">DOM</div>
+            <div class="text-center font-medium text-xs text-gray-500 py-2">SEG</div>
+            <div class="text-center font-medium text-xs text-gray-500 py-2">TER</div>
+            <div class="text-center font-medium text-xs text-gray-500 py-2">QUA</div>
+            <div class="text-center font-medium text-xs text-gray-500 py-2">QUI</div>
+            <div class="text-center font-medium text-xs text-gray-500 py-2">SEX</div>
+            <div class="text-center font-medium text-xs text-gray-500 py-2">SÁB</div>
+        </div>
+
+        <!-- Botão de Ação e Dashboard -->
+        <div class="mt-8 border-t border-gray-200 pt-8">
+            <div class="flex justify-end mb-8">
+                 <button id="clear-data" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Limpar Dados do Mês</button>
+            </div>
+            <div id="dashboard" class="bg-gray-50 rounded-xl p-6">
+                <h3 id="dashboard-month-name" class="text-lg font-semibold text-gray-800 mb-4">Resumo de </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div><p class="text-sm text-gray-500">Dias Úteis</p><p id="db-business-days" class="text-2xl font-bold text-gray-900">-</p></div>
+                    <div><p class="text-sm text-gray-500">Média Diária</p><p id="db-daily-average" class="text-2xl font-bold text-gray-900">-</p></div>
+                    <div><p class="text-sm text-gray-500">Total de Abordagens</p><p id="db-total-leads" class="text-2xl font-bold text-gray-900">-</p></div>
+                    <div><p class="text-sm text-gray-500">Abordagens Esperadas</p><p id="db-expected-leads" class="text-2xl font-bold text-gray-900">-</p></div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Loader -->
-  <div id="loader-container" class="text-center">
-    <div id="loader"></div>
-    <p class="mt-4 text-gray-600">Conectando ao banco de dados...</p>
-  </div>
+    <!-- Loader -->
+    <div id="loader-container" class="text-center">
+        <div id="loader"></div>
+        <p id="loader-message" class="mt-4 text-gray-600">Conectando ao banco de dados...</p>
+    </div>
 
-  <script type="module">
-    // Importar funções do Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot, writeBatch, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <script type="module">
+        // Importar funções do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot, writeBatch, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // A configuração do Firebase será injetada pelo ambiente
-    const firebaseConfig = typeof __firebase_config !== 'undefined'
-      ? JSON.parse(__firebase_config)
-      : {
-        apiKey: "AIzaSyAc6UkuJzca-S27dWuX9aUsHS8KQ0ZK75I",
-        authDomain: "leads-tracker-479a0.firebaseapp.com",
-        projectId: "leads-tracker-479a0",
-        storageBucket: "leads-tracker-479a0.firebasestorage.app",
-        messagingSenderId: "212835743147",
-        appId: "1:212835743147:web:b4d0e1e54ab7d095120eee"
-      };
+        // A configuração do Firebase será injetada pelo ambiente
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config)
+            : {
+                apiKey: "AIzaSyAc6UkuJzca-S27dWuX9aUsHS8KQ0ZK75I",
+                authDomain: "leads-tracker-479a0.firebaseapp.com",
+                projectId: "leads-tracker-479a0",
+                storageBucket: "leads-tracker-479a0.firebasestorage.app",
+                messagingSenderId: "212835743147",
+                appId: "1:212835743147:web:b4d0e1e54ab7d095120eee"
+            };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        let userId = null;
 
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    let userId = null;
+        let leadsData = {};
+        let monthlyGoals = {};
+        let unsubscribeLeads = () => {};
+        let unsubscribeGoals = () => {};
 
-    let leadsData = {};
-    let monthlyGoals = {};
-    let unsubscribeLeads = () => { };
-    let unsubscribeGoals = () => { };
+        document.addEventListener('DOMContentLoaded', () => {
+            const appContainer = document.getElementById('app-container');
+            const loaderContainer = document.getElementById('loader-container');
+            const loaderMessage = document.getElementById('loader-message');
+            const calendarGrid = document.getElementById('calendar-grid');
+            const currentMonthYearEl = document.getElementById('current-month-year');
+            const prevMonthBtn = document.getElementById('prev-month');
+            const nextMonthBtn = document.getElementById('next-month');
+            const monthlyGoalInput = document.getElementById('monthly-goal');
+            const clearDataBtn = document.getElementById('clear-data');
+            const userIdDisplay = document.getElementById('user-id-display');
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const appContainer = document.getElementById('app-container');
-      const loaderContainer = document.getElementById('loader-container');
-      const calendarGrid = document.getElementById('calendar-grid');
-      const currentMonthYearEl = document.getElementById('current-month-year');
-      const prevMonthBtn = document.getElementById('prev-month');
-      const nextMonthBtn = document.getElementById('next-month');
-      const monthlyGoalInput = document.getElementById('monthly-goal');
-      const clearDataBtn = document.getElementById('clear-data');
-      const userIdDisplay = document.getElementById('user-id-display');
+            const dashboardMonthName = document.getElementById('dashboard-month-name');
+            const dbBusinessDays = document.getElementById('db-business-days');
+            const dbDailyAverage = document.getElementById('db-daily-average');
+            const dbTotalLeads = document.getElementById('db-total-leads');
+            const dbExpectedLeads = document.getElementById('db-expected-leads');
 
-      const dashboardMonthName = document.getElementById('dashboard-month-name');
-      const dbBusinessDays = document.getElementById('db-business-days');
-      const dbDailyAverage = document.getElementById('db-daily-average');
-      const dbTotalLeads = document.getElementById('db-total-leads');
-      const dbExpectedLeads = document.getElementById('db-expected-leads');
+            let currentDate = new Date();
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            
+            // Gerencia o estado de autenticação do usuário
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    userIdDisplay.textContent = `ID do Usuário: ${userId}`;
+                    
+                    loaderContainer.classList.add('hidden');
+                    appContainer.classList.remove('hidden');
+                    
+                    await setupListeners();
+                    updateUI();
+                } else {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined') {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (error) {
+                        console.error("Firebase Authentication Error:", error);
+                        loaderMessage.innerHTML = `<span class="text-red-500 font-semibold">Falha na Autenticação.</span><br>Verifique se o método 'Anônimo' está ativado no seu painel do Firebase.`;
+                        document.getElementById('loader').style.display = 'none';
+                    }
+                }
+            });
 
-      let currentDate = new Date();
-      const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            async function setupListeners() {
+                unsubscribeLeads();
+                unsubscribeGoals();
+                
+                const goalsCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'goals');
+                unsubscribeGoals = onSnapshot(goalsCollectionRef, (snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        monthlyGoals[change.doc.id] = change.doc.data().goal;
+                    });
+                    updateUI();
+                });
 
-      // Gerencia o estado de autenticação do usuário
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          userId = user.uid;
-          userIdDisplay.textContent = `ID do Usuário: ${userId}`;
-
-          // Esconde o loader e mostra o app
-          loaderContainer.classList.add('hidden');
-          appContainer.classList.remove('hidden');
-
-          await setupListeners();
-          updateUI();
-        } else {
-          // Se não houver token, faz login anônimo
-          if (typeof __initial_auth_token !== 'undefined') {
-            await signInWithCustomToken(auth, __initial_auth_token);
-          } else {
-            await signInAnonymously(auth);
-          }
-        }
-      });
-
-      async function setupListeners() {
-        // Cancela listeners antigos para evitar duplicação
-        unsubscribeLeads();
-        unsubscribeGoals();
-
-        // Listener para metas
-        const goalsCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'goals');
-        unsubscribeGoals = onSnapshot(goalsCollectionRef, (snapshot) => {
-          snapshot.docChanges().forEach((change) => {
-            monthlyGoals[change.doc.id] = change.doc.data().goal;
-          });
-          updateUI();
-        });
-
-        // Listener para leads
-        const leadsCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'leads');
-        unsubscribeLeads = onSnapshot(leadsCollectionRef, (snapshot) => {
-          snapshot.docChanges().forEach((change) => {
-            if (change.type === "removed") {
-              delete leadsData[change.doc.id];
-            } else {
-              leadsData[change.doc.id] = change.doc.data().count;
+                const leadsCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'leads');
+                unsubscribeLeads = onSnapshot(leadsCollectionRef, (snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "removed") {
+                            delete leadsData[change.doc.id];
+                        } else {
+                            leadsData[change.doc.id] = change.doc.data().count;
+                        }
+                    });
+                    updateUI();
+                });
             }
-          });
-          updateUI();
-        });
-      }
 
-      function getGoalForMonth(date) {
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        return monthlyGoals[monthKey] || 10;
-      }
+            function getGoalForMonth(date) {
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                return monthlyGoals[monthKey] || 10;
+            }
+            
+            function getProgressColor(progress) {
+                if (progress === 0) return 'stroke-transparent';
+                if (progress <= 30) return 'stroke-red-500';
+                if (progress <= 70) return 'stroke-yellow-500';
+                return 'stroke-green-500';
+            }
 
-      function getProgressColor(progress) {
-        if (progress === 0) return 'stroke-transparent';
-        if (progress <= 30) return 'stroke-red-500';
-        if (progress <= 70) return 'stroke-yellow-500';
-        return 'stroke-green-500';
-      }
+            function updateUI() {
+                if (!userId) return; 
+                const currentGoal = getGoalForMonth(currentDate);
+                monthlyGoalInput.value = currentGoal;
+                renderCalendar(currentDate, currentGoal);
+                renderDashboard(currentDate, currentGoal);
+            }
 
-      function updateUI() {
-        if (!userId) return; // Não faz nada se não estiver autenticado
-        const currentGoal = getGoalForMonth(currentDate);
-        monthlyGoalInput.value = currentGoal;
-        renderCalendar(currentDate, currentGoal);
-        renderDashboard(currentDate, currentGoal);
-      }
+            function renderDashboard(date, goal) {
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
+                let businessDays = 0;
+                let totalLeads = 0;
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const loopDate = new Date(year, month, day);
+                    const dayOfWeek = loopDate.getDay();
+                    if (dayOfWeek > 0 && dayOfWeek < 6) businessDays++;
+                }
+                for (const key in leadsData) {
+                    if (key.startsWith(monthPrefix)) totalLeads += leadsData[key];
+                }
+                const dailyAverage = businessDays > 0 ? (totalLeads / businessDays).toFixed(1) : 0;
+                const expectedLeads = businessDays * goal;
+                dashboardMonthName.textContent = `Resumo de ${monthNames[month]}`;
+                dbBusinessDays.textContent = businessDays;
+                dbDailyAverage.textContent = dailyAverage;
+                dbTotalLeads.textContent = totalLeads;
+                dbExpectedLeads.textContent = expectedLeads;
+            }
 
-      function renderDashboard(date, goal) {
-        const year = date.getFullYear();
-        const month = date.getMonth();
-        const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}`;
-
-        let businessDays = 0;
-        let totalLeads = 0;
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        for (let day = 1; day <= daysInMonth; day++) {
-          const loopDate = new Date(year, month, day);
-          const dayOfWeek = loopDate.getDay();
-          if (dayOfWeek > 0 && dayOfWeek < 6) businessDays++;
-        }
-
-        for (const key in leadsData) {
-          if (key.startsWith(monthPrefix)) totalLeads += leadsData[key];
-        }
-
-        const dailyAverage = businessDays > 0 ? (totalLeads / businessDays).toFixed(1) : 0;
-        const expectedLeads = businessDays * goal;
-
-        dashboardMonthName.textContent = `Resumo de ${monthNames[month]}`;
-        dbBusinessDays.textContent = businessDays;
-        dbDailyAverage.textContent = dailyAverage;
-        dbTotalLeads.textContent = totalLeads;
-        dbExpectedLeads.textContent = expectedLeads;
-      }
-
-      function renderCalendar(date, goal) {
-        const dayHeaders = Array.from(calendarGrid.querySelectorAll('.text-xs'));
-        calendarGrid.innerHTML = '';
-        dayHeaders.forEach(header => calendarGrid.appendChild(header));
-
-        const year = date.getFullYear();
-        const month = date.getMonth();
-        currentMonthYearEl.textContent = `${monthNames[month]} ${year}`;
-        const firstDayOfMonth = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        for (let i = 0; i < firstDayOfMonth; i++) {
-          calendarGrid.appendChild(document.createElement('div'));
-        }
-
-        for (let day = 1; day <= daysInMonth; day++) {
-          const dayCell = document.createElement('div');
-          const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-          const leadsCount = leadsData[dateKey] || 0;
-          const progress = goal > 0 ? Math.min((leadsCount / goal) * 100, 100) : 0;
-          const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
-          const todayClass = isToday ? 'bg-blue-50' : 'bg-white';
-          dayCell.className = `relative p-2 border border-gray-200 rounded-lg shadow-sm flex flex-col items-center justify-start aspect-square transition ${todayClass}`;
-          dayCell.dataset.date = dateKey;
-          const radius = 16;
-          const circumference = 2 * Math.PI * radius;
-          const offset = circumference - (progress / 100) * circumference;
-          const progressColor = getProgressColor(progress);
-          dayCell.innerHTML = `
+            function renderCalendar(date, goal) {
+                const dayHeaders = Array.from(calendarGrid.querySelectorAll('.text-xs'));
+                calendarGrid.innerHTML = '';
+                dayHeaders.forEach(header => calendarGrid.appendChild(header));
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                currentMonthYearEl.textContent = `${monthNames[month]} ${year}`;
+                const firstDayOfMonth = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                for (let i = 0; i < firstDayOfMonth; i++) {
+                    calendarGrid.appendChild(document.createElement('div'));
+                }
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayCell = document.createElement('div');
+                    const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const leadsCount = leadsData[dateKey] || 0;
+                    const progress = goal > 0 ? Math.min((leadsCount / goal) * 100, 100) : 0;
+                    const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+                    const todayClass = isToday ? 'bg-blue-50' : 'bg-white';
+                    dayCell.className = `relative p-2 border border-gray-200 rounded-lg shadow-sm flex flex-col items-center justify-start aspect-square transition ${todayClass}`;
+                    dayCell.dataset.date = dateKey;
+                    const radius = 16;
+                    const circumference = 2 * Math.PI * radius;
+                    const offset = circumference - (progress / 100) * circumference;
+                    const progressColor = getProgressColor(progress);
+                    dayCell.innerHTML = `
                         <div class="relative w-10 h-10 flex items-center justify-center mb-1">
                             <svg class="w-full h-full" viewBox="0 0 36 36">
                                 <circle class="stroke-current text-gray-200" stroke-width="3" fill="transparent" r="${radius}" cx="18" cy="18"/>
@@ -313,65 +283,61 @@
                         </div>
                         <input type="number" value="${leadsCount > 0 ? leadsCount : ''}" placeholder="-" class="w-full text-center bg-transparent border-none text-gray-800 font-semibold text-base focus:outline-none focus:ring-0 p-0">
                     `;
-          calendarGrid.appendChild(dayCell);
-        }
-      }
+                    calendarGrid.appendChild(dayCell);
+                }
+            }
+            
+            async function updateLeadsCount(dateKey, count) {
+                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'leads', dateKey);
+                await setDoc(docRef, { count: count });
+            }
 
-      async function updateLeadsCount(dateKey, count) {
-        const docRef = doc(db, 'artifacts', appId, 'users', userId, 'leads', dateKey);
-        await setDoc(docRef, { count: count });
-      }
+            async function updateMonthlyGoal(date, goal) {
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'goals', monthKey);
+                await setDoc(docRef, { goal: goal });
+            }
+            
+            prevMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); updateUI(); });
+            nextMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); updateUI(); });
+            
+            monthlyGoalInput.addEventListener('change', () => {
+                let newGoal = parseInt(monthlyGoalInput.value, 10) || 1;
+                if (newGoal < 1) newGoal = 1;
+                monthlyGoalInput.value = newGoal;
+                updateMonthlyGoal(currentDate, newGoal);
+            });
 
-      async function updateMonthlyGoal(date, goal) {
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        const docRef = doc(db, 'artifacts', appId, 'users', userId, 'goals', monthKey);
-        await setDoc(docRef, { goal: goal });
-      }
+            calendarGrid.addEventListener('input', (e) => {
+                if (e.target.tagName === 'INPUT') {
+                    const dayCell = e.target.closest('[data-date]');
+                    if (dayCell) {
+                        const dateKey = dayCell.dataset.date;
+                        let leadsCount = parseInt(e.target.value, 10) || 0;
+                        if (leadsCount < 0) leadsCount = 0;
+                        e.target.value = leadsCount > 0 ? leadsCount : '';
+                        updateLeadsCount(dateKey, leadsCount);
+                    }
+                }
+            });
 
-      // Event Listeners
-      prevMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); updateUI(); });
-      nextMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); updateUI(); });
+            clearDataBtn.addEventListener('click', async () => {
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const monthPrefix = `${year}-${month}`;
+                
+                if (!confirm(`Tem certeza que deseja limpar todos os dados de ${monthNames[currentDate.getMonth()]} ${year}?`)) return;
 
-      monthlyGoalInput.addEventListener('change', () => {
-        let newGoal = parseInt(monthlyGoalInput.value, 10) || 1;
-        if (newGoal < 1) newGoal = 1;
-        monthlyGoalInput.value = newGoal;
-        updateMonthlyGoal(currentDate, newGoal);
-      });
-
-      calendarGrid.addEventListener('input', (e) => {
-        if (e.target.tagName === 'INPUT') {
-          const dayCell = e.target.closest('[data-date]');
-          if (dayCell) {
-            const dateKey = dayCell.dataset.date;
-            let leadsCount = parseInt(e.target.value, 10) || 0;
-            if (leadsCount < 0) leadsCount = 0;
-            e.target.value = leadsCount > 0 ? leadsCount : '';
-            updateLeadsCount(dateKey, leadsCount);
-          }
-        }
-      });
-
-      clearDataBtn.addEventListener('click', async () => {
-        const year = currentDate.getFullYear();
-        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-        const monthPrefix = `${year}-${month}`;
-
-        if (!confirm(`Tem certeza que deseja limpar todos os dados de ${monthNames[currentDate.getMonth()]} ${year}?`)) return;
-
-        const leadsCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'leads');
-        const q = query(leadsCollectionRef, where('__name__', '>=', monthPrefix), where('__name__', '<', `${year}-${String(parseInt(month, 10) + 1).padStart(2, '0')}`));
-
-        const querySnapshot = await getDocs(q);
-        const batch = writeBatch(db);
-        querySnapshot.forEach((doc) => {
-          batch.delete(doc.ref);
+                const leadsCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'leads');
+                const q = query(leadsCollectionRef, where('__name__', '>=', monthPrefix), where('__name__', '<', `${year}-${String(parseInt(month, 10) + 1).padStart(2, '0')}`));
+                
+                const querySnapshot = await getDocs(q);
+                const batch = writeBatch(db);
+                querySnapshot.forEach((doc) => { batch.delete(doc.ref); });
+                await batch.commit();
+            });
         });
-        await batch.commit();
-      });
-    });
-  </script>
+    </script>
 
 </body>
-
 </html>
